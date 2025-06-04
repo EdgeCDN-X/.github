@@ -1,9 +1,10 @@
-# Hi there 👋
+# EdgeCDN-X 👋
 EdgeCDN-X is an open source CDN solution built purely on top of k8s and CNCF projects. 
 I decided to start to work on this projects, since there are no Open Source CDN solutions available, except for Apache TrafficControl.
 
 My plan with this project is to document the progress and create a project which will be easily understandable and deployable by community members.
 
+For updates feel free to sign up to the [newsletter](https://mailing.edgecdnx.com/subscription/form)
 
 ## Features
 EdgeCDN-X is a OpenSource CDN solutio built completely on top of Kubernetes and consists of the following components:

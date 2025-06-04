@@ -59,3 +59,12 @@ Status: In Progress
 The Ingress controller is rolled out as a daemonset. Multiple instances of the caching engine can be rolled out for different caching tiers (e.g., ram, ssd). The underlying storage for caching must be prepared beforehand. To ensure maximum performance the ingress controller is attached to the hostNetwork and mounts the Caches as HostPath Volume. These settings can be modified editing the base manifest.
 
 
+
+# Planned features for MVP
+* Multi cache support
+* S3 upstream connector
+* DNS routing
+* 302 redirection routing
+* Active Healthchecks
+* Control plane based on CRDs
+* Controller UI

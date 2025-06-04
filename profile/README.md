@@ -61,10 +61,10 @@ The Ingress controller is rolled out as a daemonset. Multiple instances of the c
 
 
 # Planned features for MVP
-* Multi cache support
+* Multi cache support - In Progress
 * S3 upstream connector
-* DNS routing
+* DNS routing - In Progress
 * 302 redirection routing
 * Active Healthchecks
-* Control plane based on CRDs
+* Control plane based on CRDs - In Progress
 * Controller UI

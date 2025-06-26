@@ -48,6 +48,31 @@ Status:  ✅
 [edgecdnx-geolookup](https://github.com/EdgeCDN-X/edgecdnx-geolookup) CoreDNS module finds the most suitable locatio based on MMDB2 DB. This module uses [geoip](https://coredns.io/plugins/geoip/) metadata to enrich the necessary fields.
 Geolookup module assigns weights and score for each request and the location is based on this score. If multiple locations are found with the same score, the requests are balanced based on associated weight. (e.g. eu-west and eu-east routing to Germany in ratio of 40:60)
 
+Geolookup configurations are coming from CRDs with an example configuration shown here:
+```
+---
+apiVersion: infrastructure.edgecdnx.com/v1alpha1
+kind: Location
+metadata:
+  name: eu-west-1
+spec:
+  fallbackLocations:
+  - us-west-1
+  nodes:
+  - name: n1
+    ipv4: 192.168.100.35
+    caches:
+    - ssd
+  geoLookup:
+    weight: 50
+    attributes:
+      geoip/continent/code:
+        weight: 1000
+        values:
+          - value: "EU"
+            weight: 10
+          - value: "AF"
+```
 
 Status: ✅
 

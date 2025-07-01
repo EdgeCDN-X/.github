@@ -85,7 +85,7 @@ Example configuration:
             namespace edgecdnx-routing
             soa ns
             email noc.edgecdnx.com
-            ns ns2 189.167.203.182
+            ns ns1 189.167.203.182
             ns ns2 190.167.203.183
         }
 ```
@@ -100,7 +100,7 @@ The Ingress controller is rolled out as a daemonset. Multiple instances of the c
 
 ### Origin Support
 We definitely want to support multiple origin types such as, S3 and Static Origins
-* Static origins - HTTP, HTTPS based origins - In progress - 👷‍♂️
+* Static origins - HTTP, HTTPS based origins - Supported - ✅
 * S3 Origins -  🔜
 
 ### SSL Certificate management

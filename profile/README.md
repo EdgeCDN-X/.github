@@ -115,3 +115,9 @@ This is a bit tricky use case. As per ACME, DNS based certificate issuance can b
 * Control plane based on CRDs - v1alpha1 version  ✅
 * Controller UI  🔜
 
+# Additional Features - yet unplanned
+* Tiered caching - Edge, local, regional caches to further lower latency and reduce load on origin servers
+* Edge caching - Caching on offshore locations, such as boats, trains, remote locations by deploying a cache as an edge computing enpoint
+* WAF - Web Application Firewall with mod-security
+* Large File Support - support for ranges requests and caching to support effective caching of large files
+* Private Content - Signed URLs to serve private content

@@ -111,7 +111,7 @@ This is a bit tricky use case. As per ACME, DNS based certificate issuance can b
 * S3 upstream connector -  🔜
 * DNS routing -  ✅
 * 302 redirection routing - 🔜 - Will be supported by attaching to the CoreDNS gRPC endpoint
-* Active Healthchecks -  🔜
+* Active Healthchecks -  In Progress - 🔜
 * Control plane based on CRDs - v1alpha1 version  ✅
 * Controller UI  🔜
 

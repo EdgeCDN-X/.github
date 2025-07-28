@@ -2,7 +2,6 @@
 Thank you for visiting my page. 
 
 EdgeCDN-X is an open source CDN solution built purely on top of k8s and CNCF projects. 
-I decided to start to work on this projects, since there are no Open Source CDN solutions available, except for Apache TrafficControl.
 
 My plan with this project is to document the progress and create a project which will be easily understandable and deployable by community members.
 For updates feel free to sign up to the [newsletter](https://mailing.edgecdnx.com/subscription/form)
@@ -83,7 +82,7 @@ Example configuration:
 ```
         edgecdnxservices {
             namespace edgecdnx-routing
-            soa ns
+            soa ns1
             email noc.edgecdnx.com
             ns ns1 189.167.203.182
             ns ns2 190.167.203.183
@@ -97,21 +96,41 @@ Status: ✅
 
 The Ingress controller is rolled out as a daemonset. Multiple instances of the caching engine can be rolled out for different caching tiers (e.g., ram, ssd). The underlying storage for caching must be prepared beforehand. To ensure maximum performance the ingress controller is attached to the hostNetwork and mounts the Caches as HostPath Volume. These settings can be modified editing the base manifest.
 
-
 ### Origin Support
 We definitely want to support multiple origin types such as, S3 and Static Origins
-* Static origins - HTTP, HTTPS based origins - Supported - ✅
-* S3 Origins -  🔜
+* Static origins - HTTP, HTTPS based origins - ✅
+* S3 Origins - ✅
+
+### Query Parameter whitelisting
+Sometimes query params modify the requested content. By default the EdgeCDN-X Platform ignores all query params when building the cache key for the returned content. In order to whitelist these query params we have to specity the queryParams in the cacheKey parameter of the Service Spec:
+
+```yaml
+apiVersion: infrastructure.edgecdnx.com/v1alpha1
+kind: Service
+metadata:
+  name: akldjgsofheiwu.cdn.edgecdnx.com
+spec:
+  name: akldjgsofheiwu.cdn.edgecdnx.com
+  domain: akldjgsofheiwu.cdn.edgecdnx.com
+  originType: static
+  cacheKey:
+    queryParams:
+      - "v"
+      - "ver"
+      - "version"
+```
+
+This snippet whill ensure, that the requests coming to akldjgsofheiwu.cdn.edgecdnx.com/content.js?ver=1.0.0 and akldjgsofheiwu.cdn.edgecdnx.com/content.js?ver=1.0.1 will be cached individually. If a query param is not defined, it is stripped of when sent to upstream. If no query Param is defined in the cacheKey the query params are passed to the upstream but they're not considered when building the cache key to store the response, which means the requests from the previous response would return the same content.
 
 ### SSL Certificate management
 This is a bit tricky use case. As per ACME, DNS based certificate issuance can be created for the owned domain (currently edgecdnx.com), we have to solve the challenges of distributing that certificate to the individual endpoints. For customer domains we do not have access to their registrar and NS so we have to fallback to HTTP based challenge. The problem is, that since this is a CDN, the challenge can end up on any of the nodes due to DNS redirection. For this purpose, we will start the challenge on the control plane and build a small helper reverse proxy, which will direct those requests from the individual endpoints to the control plane endpoint where the cert issuance is in progress. Once issued, we have to distribute the Certificates to the individual Endpoints.  ✅
 
 ### Secure URLS ###
-To avoid access to certain objects publicly it is possible to use URL signatures to prevent unauthorized access to the resources. These signatures are often used for signing Stream (HLS or MPEG) playlists. Further down the line, once the signature is verified a session cookie is issued which the client can use to access the stream without having to Sign each segment's request. The session is only valid for a specific stream. - Prototype implemented - 🔜
+To avoid access to certain objects publicly it is possible to use URL signatures to prevent unauthorized access to the resources. These signatures are often used for signing Stream (HLS or MPEG) playlists. Further down the line, once the signature is verified a session cookie is issued which the client can use to access the stream without having to Sign each segment's request. The session is only valid for a specific stream. Further [reading(https://github.com/EdgeCDN-X/secure-urls)] - ✅
 
 # Planned features for MVP
 * Multi cache support -  ✅ - Supported, Multiple Nginx definitions have to be defined
-* S3 upstream connector -  🔜
+* S3 upstream connector -  ✅ - Forked from Nginx and adapted to our needs.
 * DNS routing -  ✅
 * 302 redirection routing - 🔜 - Will be supported by attaching to the CoreDNS gRPC endpoint
 * Active Healthchecks -  In Progress - ✅
@@ -123,4 +142,3 @@ To avoid access to certain objects publicly it is possible to use URL signatures
 * Edge caching - Caching on offshore locations, such as boats, trains, remote locations by deploying a cache as an edge computing enpoint
 * WAF - Web Application Firewall with mod-security
 * Large File Support - support for ranges requests and caching to support effective caching of large files
-* Private Content - Signed URLs to serve private content

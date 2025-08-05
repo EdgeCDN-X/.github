@@ -131,7 +131,7 @@ This is a bit tricky use case. As per ACME, DNS based certificate issuance can b
 ### Secure URLS ###
 To avoid access to certain objects publicly it is possible to use URL signatures to prevent unauthorized access to the resources. These signatures are often used for signing Stream (HLS or MPEG) playlists. Further down the line, once the signature is verified a session cookie is issued which the client can use to access the stream without having to Sign each segment's request. The session is only valid for a specific stream. Further [reading(https://github.com/EdgeCDN-X/secure-urls)] - ✅
 
-# Features
+# Additional Features
 * Multi cache support -  ✅ - Supported, Multiple Nginx definitions have to be defined
 * S3 upstream connector -  ✅ - Forked from Nginx and adapted to our needs.
 * DNS routing -  ✅

@@ -1,12 +1,15 @@
-# EdgeCDN-X 👋
+# EdgeCDN-X
 Thank you for visiting my page. 
 
 EdgeCDN-X is an open source CDN solution built purely on top of k8s and CNCF projects. 
+
+![Logo](logo.png)
 
 My plan with this project is to document the progress and create a project which will be easily understandable and deployable by community members.
 For updates feel free to sign up to the [newsletter](https://mailing.edgecdnx.com/subscription/form)
 
 
+**Official [Documentation](https://edgecdn-x.github.io/)**
 
 ## Features
 EdgeCDN-X is consists of the following components:

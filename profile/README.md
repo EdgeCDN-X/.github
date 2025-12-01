@@ -18,7 +18,7 @@ EdgeCDN-X is consists of the following components:
 * Caching - Caching engine handled via Nginx Ingress controller with customized annotations
 
 ## Control-Plane
-Control plane is using ArgoCD and custom CRDs and operators to describe the topology, services. This component is WIP, will be using ArgoCD cluster generators to roll out the desired configuration to the individual locations
+Control plane is using ArgoCD and custom CRDs and operators to describe the topology, services. This component is using ArgoCD cluster generators to roll out the desired configuration to the individual locations
 
 ## Routing
 Routing component supports 3 different routing engines:
@@ -32,6 +32,7 @@ Routing component routes the individual requests via the following steps:
 * Consistent hashing in location to maximize cache-hit ratio. ✅
 * Active healthchecks to make sure destinations are healthy and available ✅
 * Fallback routing to different location if location has no active nodes ✅
+* Caching with multi cache type support. E.g. SSD caching RAMDISK caching ✅
 
 Routing engine is rolled out to each location with **edgecdnx.com/routing** label in the cluster [metadata](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Cluster/)
 
@@ -60,11 +61,19 @@ metadata:
 spec:
   fallbackLocations:
   - us-west-1
-  nodes:
-  - name: n1
-    ipv4: 192.168.100.35
-    caches:
-    - ssd
+  nodeGroups:
+    - name: ssd
+      nodes:
+        - name: n1
+          ipv4: 74.220.31.183
+      nodeSelector:
+        kubernetes.civo.com/civo-node-pool: fra1-c1
+      cacheConfig:
+        name: "ssd"
+        path: "/var/cache/ssd"
+        keysZone: "100m"
+        inactive: "10080m"
+        maxSize: "4096m"
   geoLookup:
     weight: 50
     attributes:
@@ -139,9 +148,9 @@ To avoid access to certain objects publicly it is possible to use URL signatures
 * Active Healthchecks -  In Progress - ✅
 * Control plane based on CRDs - v1alpha1 version  ✅
 * Controller UI  🔜
+* WAF - Web Application Firewall with mod-security ✅
 
 # Additional Features - yet unplanned
 * Tiered caching - Edge, local, regional caches to further lower latency and reduce load on origin servers
 * Edge caching - Caching on offshore locations, such as boats, trains, remote locations by deploying a cache as an edge computing enpoint
-* WAF - Web Application Firewall with mod-security
 * Large File Support - support for ranges requests and caching to support effective caching of large files

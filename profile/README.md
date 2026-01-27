@@ -10,6 +10,7 @@ For updates feel free to sign up to the [newsletter](https://mailing.edgecdnx.co
 
 
 **Official [Documentation](https://edgecdn-x.github.io/)**
+
 If you're looking for commercial support or consulting services on CDNs, see the **Official [Website](https://edgecdnx.com)**
 
 ## Features

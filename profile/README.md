@@ -12,6 +12,8 @@ Looking for consultation? Set up a free call [here](https://cal.eu/tomas-boros-f
 
 **Demo** Available at [https://portal.demo.edgecdnx.com](https://portal.demo.edgecdnx.com)
 
+**Youtube** Channel at [@edgecdnx](https://www.youtube.com/@edgecdnx)
+
 **Official [Documentation](https://edgecdn-x.github.io/)**
 
 If you're looking for commercial support or consulting services on CDNs, see the **Official [Website](https://edgecdnx.com)**

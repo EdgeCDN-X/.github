@@ -8,6 +8,9 @@ EdgeCDN-X is an open source CDN solution built purely on top of k8s and CNCF pro
 My plan with this project is to document the progress and create a project which will be easily understandable and deployable by community members.
 For updates feel free to sign up to the [newsletter](https://mailing.edgecdnx.com/subscription/form)
 
+Looking for consultation? Set up a free call [here](https://cal.eu/tomas-boros-fbi1fo/30min)
+
+**Demo** Available at [https://portal.demo.edgecdnx.com](https://portal.demo.edgecdnx.com)
 
 **Official [Documentation](https://edgecdn-x.github.io/)**
 
@@ -24,9 +27,11 @@ Control plane is using ArgoCD and custom CRDs and operators to describe the topo
 
 ## Routing
 Routing component supports 3 different routing engines:
-* DNS Routing - In Alpha ✅
-* 302 Redirection - Planned 🔜
-* URL Rewriting API - Planned 🔜
+* DNS Routing - ✅
+* 302 Redirection - ✅ 
+* URL Rewriting API - ✅ 
+
+NOTE: 302 and URL rewriting API is present in the system, however certificate management is not prepared for such SSL cert generation explostion. With this solution for each `node * location * service` an SSL certificate must be generated, which is currently out of the scope of this project.
 
 Routing component routes the individual requests via the following steps:
 * Prefix static routing to individual location (sourced from static prefix list ✅ or BGP 🔜) ✅
@@ -39,71 +44,18 @@ Routing component routes the individual requests via the following steps:
 Routing engine is rolled out to each location with **edgecdnx.com/routing** label in the cluster [metadata](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Cluster/)
 
 ### Static Prefix routing
-[edgecdnx-prefixlist](https://github.com/EdgeCDN-X/edgecdnx-prefixlist) CoreDNS module gathers all the prefixes for the individual locations. These prefixes must be normalized and must be non overlapping. There's a helper [operator](https://github.com/EdgeCDN-X/edgecdnx-controller) which helps to achieve Prefix Consolidation and Supernet subnetting, to make sure there are no overlaps in the Prefixes. The Module is using CoreDNS's Metadata interface to find the desired destination for a given prefix.
+[edgecdnx-plugin](https://github.com/EdgeCDN-X/edgecdnx-plugin) is a CoreDNS plugin to manage the Routing accross the ecosystem.
 
-Features:
-* Routing to location based on Client IP address 
-* Prefixes are stored in a fast balanced AVL Tree to ensure speedy lookups
-* EDNS0 Subnet extension support
-* IPv4 and IPv6 Supported
-
-Status:  ✅ 
-
-### GeoLookup routing
-[edgecdnx-geolookup](https://github.com/EdgeCDN-X/edgecdnx-geolookup) CoreDNS module finds the most suitable locatio based on MMDB2 DB. This module uses [geoip](https://coredns.io/plugins/geoip/) metadata to enrich the necessary fields.
-Geolookup module assigns weights and score for each request and the location is based on this score. If multiple locations are found with the same score, the requests are balanced based on associated weight. (e.g. eu-west and eu-east routing to Germany in ratio of 40:60)
-
-Geolookup configurations are coming from CRDs with an example configuration shown here:
-```
----
-apiVersion: infrastructure.edgecdnx.com/v1alpha1
-kind: Location
-metadata:
-  name: eu-west-1
-spec:
-  fallbackLocations:
-  - us-west-1
-  nodeGroups:
-    - name: ssd
-      nodes:
-        - name: n1
-          ipv4: 74.220.31.183
-      nodeSelector:
-        kubernetes.civo.com/civo-node-pool: fra1-c1
-      cacheConfig:
-        name: "ssd"
-        path: "/var/cache/ssd"
-        keysZone: "100m"
-        inactive: "10080m"
-        maxSize: "4096m"
-  geoLookup:
-    weight: 50
-    attributes:
-      geoip/continent/code:
-        weight: 1000
-        values:
-          - value: "EU"
-            weight: 10
-          - value: "AF"
-```
-
-Status: ✅
-
-### Service catalog
-[edgecdnx-services](https://github.com/EdgeCDN-X/edgecdnx-services). This module is responsible for building the SOA and NS records and also enriches metadata with customer specific information for better routing decitions down the line. All thes services are auto loaded via the k8s client, so it is not required to reload the Configuration when a new service is configured.
-
-Example configuration:
-```
-        edgecdnxservices {
-            namespace edgecdnx-routing
-            soa ns1
-            email noc.edgecdnx.com
-            ns ns1 189.167.203.182
-            ns ns2 190.167.203.183
-        }
-```
-
-Status: ✅
+It supports:
+- Dynamic service-based routing for `A` and `AAAA` queries
+- Configurable dynamic answers as `A`/`AAAA` or `CNAME`
+- Alternate response mode for gRPC-originated requests detected from incoming context metadata
+- Direct node resolution for hostnames in the form `node.location.node.service`
+- Prefix-list routing (IP/CIDR to location)
+- Geo metadata lookup fallback when no prefix match is found
+- Hash-based node selection with health-aware filtering to maximize cache hit/miss ratio for a location
+- Fallback locations when a primary location has no healthy node
+- Authoritative zone responses for configured Zone CRDs (SOA/NS and related behavior)
 
 ## Caching
 [edgecdnx-cache](https://github.com/EdgeCDN-X/bootstrap/blob/main/edgecdnx/edgecdnx-cache.yaml) manifest rolls out an NGINX Deamonset for each location specified. Each location is specified as a k8s cluster and cluster definition must be labeled with **edgecdnx.com/caching** label in the cluster [metadata](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/Generators-Cluster/)
@@ -140,17 +92,17 @@ This snippet whill ensure, that the requests coming to akldjgsofheiwu.cdn.edgecd
 This is a bit tricky use case. As per ACME, DNS based certificate issuance can be created for the owned domain (currently edgecdnx.com), we have to solve the challenges of distributing that certificate to the individual endpoints. For customer domains we do not have access to their registrar and NS so we have to fallback to HTTP based challenge. The problem is, that since this is a CDN, the challenge can end up on any of the nodes due to DNS redirection. For this purpose, we will start the challenge on the control plane and build a small helper reverse proxy, which will direct those requests from the individual endpoints to the control plane endpoint where the cert issuance is in progress. Once issued, we have to distribute the Certificates to the individual Endpoints. SSL management work with custom domains and hostAliases too. ✅
 
 ### Secure URLS ###
-To avoid access to certain objects publicly it is possible to use URL signatures to prevent unauthorized access to the resources. These signatures are often used for signing Stream (HLS or MPEG) playlists. Further down the line, once the signature is verified a session cookie is issued which the client can use to access the stream without having to Sign each segment's request. The session is only valid for a specific stream. Further [reading(https://github.com/EdgeCDN-X/secure-urls)] - ✅
+To avoid access to certain objects publicly it is possible to use URL signatures to prevent unauthorized access to the resources. These signatures are often used for signing Stream (HLS or MPEG) playlists. Further down the line, once the signature is verified a session cookie is issued which the client can use to access the stream without having to Sign each segment's request. The session is only valid for a specific stream. Further [reading](https://github.com/EdgeCDN-X/secure-urls) - ✅
 
 # Additional Features
 * Multi cache support -  ✅ - Supported, Multiple Nginx definitions have to be defined
 * S3 upstream connector -  ✅ - Forked from Nginx and adapted to our needs.
-* DNS routing -  ✅
-* 302 redirection routing - 🔜 - Will be supported by attaching to the CoreDNS gRPC endpoint
+* DNS routing - ✅
+* 302 redirection routing - ✅
 * Active Healthchecks -  In Progress - ✅
 * HostAliases and Bring you own Domain - ✅
 * Control plane based on CRDs - v1alpha1 version  ✅
-* Controller UI  🔜
+* Controller UI - ✅
 * WAF - Web Application Firewall with mod-security ✅
 
 # Additional Features - yet unplanned
